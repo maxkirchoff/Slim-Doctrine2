@@ -1,0 +1,24 @@
+<?php
+namespace ShareBear;
+$__top_dir = dirname(__DIR__);
+! defined('SRC_DIR')? define('SRC_DIR', "{$__top_dir}/src"):null;
+! defined('TESTS_DIR')? define('TESTS_DIR', "{$__top_dir}/tests"):null;
+! defined('APP_NAMESPACE')? define('APP_NAMESPACE', __NAMESPACE__):null;
+require dirname(__DIR__) . "/src/autoload.php";
+
+spl_autoload_register(
+   function($class) {
+      static $classes = null;
+      if ($classes === null) {
+         $classes = array(
+            ___CLASSLIST___
+          );
+      }
+      $cn = strtolower($class);
+      if (isset($classes[$cn])) {
+         require ___BASEDIR___$classes[$cn];
+      }
+   },
+    true, // throw exception
+    true  // prepend
+);

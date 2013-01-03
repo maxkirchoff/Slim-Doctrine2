@@ -1,0 +1,12 @@
+.idea
+.DS_Store
+build/api
+build/code-browser
+build/coverage
+build/logs
+build/pdepend
+build/phpunit-tests.html
+src/conf/conf.php
+src/Proxies/*.php
+tests/out.log
+dist

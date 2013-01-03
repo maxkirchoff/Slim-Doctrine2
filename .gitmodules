@@ -1,0 +1,6 @@
+[submodule "src/vendor/slim"]
+	path = src/vendor/slim
+	url = git://github.com/codeguy/Slim.git
+[submodule "src/vendor/doctrine2"]
+	path = src/vendor/doctrine2
+	url = git://github.com/doctrine/doctrine2.git

@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ShareBear" default="dev">
+
+    <target name="build"
+            depends="requirements, prepare,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpunit-build,phpdoc,phpcb"/>
+
+    <property name="testdir" value="${basedir}/tests"/>
+    <property name="srcdir" value="${basedir}/src"/>
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="distdir" value="${basedir}/dist"/>
+
+    <target name="dev" depends="prepare,lint,phpunit">
+         <!-- Default target to run for local development-->
+    </target>
+    <target name="build-parallel"
+            depends="prepare,lint,tools-parallel,phpunit,phpcb"/>
+
+    <target name="tools-parallel"
+            description="Run tools in parallel">
+        <parallel threadCount="2">
+            <sequential>
+                <antcall target="pdepend"/>
+                <antcall target="phpmd-ci"/>
+            </sequential>
+            <antcall target="phpcpd"/>
+            <antcall target="phpcs-ci"/>
+            <antcall target="phploc"/>
+        </parallel>
+    </target>
+
+    <target name="requirements" description="check for required executables">
+        <!--### assert phpab existis ###-->
+        <exec executable="which" outputProperty="which_phpab">
+            <arg value="phpab"/>
+        </exec>
+        <condition property="phpab_found">
+          <matches pattern="phpab$" string="${which_phpab}"/>
+        </condition>
+        <fail message="phpab executable not found"
+              unless="phpab_found"/>
+        <echo message="Found required executable: ${which_phpab}"></echo>
+        <!--### assert phploc exists ###-->
+        <exec executable="which" outputProperty="which_phploc">
+            <arg value="phploc"/>
+        </exec>
+        <condition property="phploc_found">
+          <matches pattern="phploc$" string="${which_phploc}"/>
+        </condition>
+        <fail message="phploc executable not found"
+              unless="phploc_found"/>
+        <echo message="Found required executable: ${which_phploc}"></echo>
+        <!--#### assert pdepend exists ###-->
+        <exec executable="which" outputProperty="which_pdepend">
+            <arg value="pdepend"/>
+        </exec>
+        <condition property="pdepend_found">
+          <matches pattern="pdepend$" string="${which_pdepend}"/>
+        </condition>
+        <fail message="pdepend executable not found"
+              unless="pdepend_found"/>
+        <echo message="Found required executable: ${which_pdepend}"></echo>
+        <!--#### assert phpmd exists ###-->
+        <exec executable="which" outputProperty="which_phpmd">
+            <arg value="phpmd"/>
+        </exec>
+        <condition property="phpmd_found">
+          <matches pattern="phpmd$" string="${which_phpmd}"/>
+        </condition>
+        <fail message="phpmd executable not found"
+              unless="phpmd_found"/>
+        <echo message="Found required executable: ${which_phpmd}"></echo>
+        <!--#### assert phpcs exists ###-->
+        <exec executable="which" outputProperty="which_phpcs">
+            <arg value="phpcs"/>
+        </exec>
+        <condition property="phpcs_found">
+          <matches pattern="phpcs$" string="${which_phpcs}"/>
+        </condition>
+        <fail message="phpcs executable not found"
+              unless="phpcs_found"/>
+        <echo message="Found required executable: ${which_phpcs}"></echo>
+        <!--#### assert phpcpd exists ###-->
+        <exec executable="which" outputProperty="which_phpcpd">
+            <arg value="phpcpd"/>
+        </exec>
+        <condition property="phpcpd_found">
+          <matches pattern="phpcpd$" string="${which_phpcpd}"/>
+        </condition>
+        <fail message="phpcpd executable not found"
+              unless="phpcpd_found"/>
+        <echo message="Found required executable: ${which_phpcpd}"></echo>
+        <!--#### assert phpunit exists ###-->
+        <exec executable="which" outputProperty="which_phpunit">
+            <arg value="phpunit"/>
+        </exec>
+        <condition property="phpunit_found">
+          <matches pattern="phpunit$" string="${which_phpunit}"/>
+        </condition>
+        <fail message="phpunit executable not found"
+              unless="phpunit_found"/>
+        <echo message="Found required executable: ${which_phpunit}"></echo>
+        <!--#### assert phpdoc exists ###-->
+        <exec executable="which" outputProperty="which_phpdoc">
+            <arg value="phpdoc"/>
+        </exec>
+        <condition property="phpdoc_found">
+          <matches pattern="phpdoc$" string="${which_phpdoc}"/>
+        </condition>
+        <fail message="phpdoc executable not found"
+              unless="phpdoc_found"/>
+        <echo message="Found required executable: ${which_phpdoc}"></echo>
+        <!--#### assert phpcb exists ###-->
+        <exec executable="which" outputProperty="which_phpcb">
+            <arg value="phpcb"/>
+        </exec>
+        <condition property="phpcb_found">
+          <matches pattern="phpcb$" string="${which_phpcb}"/>
+        </condition>
+        <fail message="phpcb executable not found"
+              unless="phpcb_found"/>
+        <echo message="Found required executable: ${which_phpcb}"></echo>
+    </target>
+
+    <target name="greeting">
+        <echo message="LOGGING: If there is any application logging during this test run you can find it in tests/logs_last_run/yyyy-mm-dd.{app name}.log" />
+        <echo message="PROFILE: To profile a test run, use `PROFILE=1 ant` . After the run completes the profiling data can be found in test/profile_out.log" />
+    </target>
+
+    <target name="clean" description="Cleanup build artifacts">
+        <delete dir="${builddir}/api"/>
+        <delete dir="${builddir}/code-browser"/>
+        <delete dir="${builddir}/coverage"/>
+        <delete dir="${builddir}/logs"/>
+        <delete dir="${builddir}/pdepend"/>
+        <delete file="${builddir}/phpunit-tests.html"/>
+        <delete dir="${distdir}" />
+    </target>
+
+    <target name="prepare" depends="greeting, clean, phpab"
+            description="Prepare for build">
+        <mkdir dir="${builddir}/api"/>
+        <mkdir dir="${builddir}/code-browser"/>
+        <mkdir dir="${builddir}/coverage"/>
+        <mkdir dir="${builddir}/logs"/>
+        <mkdir dir="${builddir}/pdepend"/>
+    </target>
+
+    <target name="phpab" description="Generate autoloader scripts">
+        <exec executable="phpab">
+            <arg value="--output"/>
+            <arg path="${srcdir}/autoload.php"/>
+            <arg value="--template"/>
+            <arg path="${builddir}/src_autoload.php.in"/>
+            <arg value="--exclude"/>
+            <arg path="**/vendor/**/tests/*.php"/>
+            <arg value="--exclude"/>
+            <arg path="**/build/*"/>
+            <arg value="--exclude"/>
+            <arg path="**/vendor/**/Tests/*.php"/>
+            <!-- Let doctrine's auto-loaders take care of themselves -->
+            <arg value="--exclude"/>
+            <arg path="${srcdir}/vendor/doctrine2/*"/>
+            <arg value="--exclude"/>
+            <arg path="${srcdir}/vendor/Slim/*"/>
+            <arg value="--exclude"/>
+            <arg path="${srcdir}/Proxies/*"/>
+            <arg path="${srcdir}"/>
+        </exec>
+
+        <exec executable="phpab">
+            <arg value="--output"/>
+            <arg path="${testdir}/autoload.php"/>
+            <arg value="--template"/>
+            <arg path="${builddir}/tests_autoload.php.in"/>
+            <arg path="${testdir}"/>
+        </exec>
+    </target>
+
+    <target name="lint" description="Perform syntax check of PHP files">
+        <exec executable="bash" failonerror="true">
+            <arg value="-c" />
+            <!-- Some explanation of the line below.  We find all the PHP files except what's in vendor, then we
+                do some xargs black magic.  The problem here is that the PHP linter does not accept more than one
+                file at a time.  So we spool up N parallel processes using xargs (-P N) to run them in the same
+                timefram rather than waiting for the last one to finish.  It may be a bit CPU intensive
+                but it's better than performing a serial lint. It should be safe to have -P set equal to the
+                number of CPU cores available. -->
+            <arg value="find ${srcdir} -name '*.php' | grep -v 'src/vendor' | xargs -L 1 -P 4 php -l" />
+        </exec>
+        <exec executable="bash" failonerror="true">
+            <arg value="-c" />
+            <arg value="find ${testdir} -name '*.php' | xargs -L 1 -P 4 php -l" />
+        </exec>
+    </target>
+
+    <target name="phploc" description="Measure project size using PHPLOC">
+        <exec executable="phploc">
+            <arg value="--log-csv"/>
+            <arg value="${builddir}/logs/phploc.csv"/>
+            <arg value="--exclude"/>
+            <arg value="vendor"/>
+            <arg path="${srcdir}"/>
+        </exec>
+    </target>
+
+    <target name="pdepend"
+            description="Calculate software metrics using PHP_Depend">
+        <exec executable="pdepend">
+            <arg value="--jdepend-xml=${builddir}/logs/jdepend.xml"/>
+            <arg value="--jdepend-chart=${builddir}/pdepend/dependencies.svg"/>
+            <arg value="--overview-pyramid=${builddir}/pdepend/overview-pyramid.svg"/>
+            <arg value="--ignore=${srcdir}/vendor"/>
+            <arg path="${srcdir}"/>
+        </exec>
+    </target>
+
+    <target name="phpmd"
+            description="Perform project mess detection using PHPMD">
+        <exec executable="phpmd">
+            <arg path="${srcdir}"/>
+            <arg value="text"/>
+            <arg value="${builddir}/phpmd.xml"/>
+            <arg value="--exclude"/>
+            <arg value="vendor"/>
+        </exec>
+    </target>
+
+    <target name="phpmd-ci"
+            description="Perform project mess detection using PHPMD">
+        <exec executable="phpmd">
+            <arg path="${srcdir}"/>
+            <arg value="xml"/>
+            <arg value="${builddir}/phpmd.xml"/>
+            <arg value="--reportfile"/>
+            <arg value="${builddir}/logs/pmd.xml"/>
+            <arg value="--exclude"/>
+            <arg value="vendor"/>
+        </exec>
+    </target>
+
+    <target name="phpcs"
+            description="Find coding standard violations using PHP_CodeSniffer">
+        <exec executable="phpcs">
+            <arg value="--standard=${builddir}/phpcs.xml"/>
+            <arg value="--ignore=autoload.php,${srcdir}/vendor"/>
+            <arg path="${srcdir}"/>
+        </exec>
+    </target>
+
+    <target name="phpcs-ci"
+            description="Find coding standard violations using PHP_CodeSniffer">
+        <exec executable="phpcs" output="/dev/null">
+            <arg value="--report=checkstyle"/>
+            <arg value="--report-file=${builddir}/logs/checkstyle.xml"/>
+            <arg value="--standard=${builddir}/phpcs.xml"/>
+            <arg value="--ignore=autoload.php,${srcdir}/vendor"/>
+            <arg path="${srcdir}"/>
+        </exec>
+    </target>
+
+    <target name="phpcpd" description="Find duplicate code using PHPCPD">
+        <exec executable="phpcpd">
+            <arg value="--log-pmd"/>
+            <arg value="${builddir}/logs/pmd-cpd.xml"/>
+            <arg value="--exclude"/>
+            <arg value="vendor"/>
+            <arg path="${srcdir}"/>
+        </exec>
+    </target>
+
+    <target name="phpunit" description="Run unit tests with PHPUnit">
+        <exec executable="phpunit" failonerror="true">
+            <!-- rely on phpunit.xml -->
+        </exec>
+    </target>
+
+    <target name="phpunit-build" description="Run unit tests with PHPUnit">
+        <exec executable="phpunit" failonerror="true">
+            <arg value="--log-junit=${builddir}/logs/junit.xml"/>
+            <arg value="--coverage-clover=${builddir}/logs/clover.xml"/>
+        </exec>
+    </target>
+
+    <target name="phpdoc" description="Generate API documentation using PHPDocumentor">
+        <exec executable="phpdoc">
+            <arg value="--quiet"/>
+            <arg value="--ignore"/>
+            <arg value="autoload.php,bootstrap_doctrine.php,**/vendor/**"/>
+            <arg value="--directory"/>
+            <arg path="${srcdir}"/>
+            <arg value="--target"/>
+            <arg path="${builddir}/api"/>
+            <arg value="--output"/>
+            <arg value="HTML:Smarty:PHP"/>
+        </exec>
+    </target>
+
+    <target name="phpcb"
+            description="Aggregate tool output with PHP_CodeBrowser">
+        <exec executable="phpcb">
+            <arg value="--ignore"/>
+            <arg path="${srcdir}/vendor"/>
+            <arg value="--log"/>
+            <arg path="${builddir}/logs"/>
+            <arg value="--source"/>
+            <arg path="${srcdir}"/>
+            <arg value="--output"/>
+            <arg path="${builddir}/code-browser"/>
+        </exec>
+    </target>
+    
+    <target name="summary">
+        <exec executable="php">
+            <arg value="${builddir}/color.php" />
+            <arg value="Links to results from this build available at: ${builddir}/index.html" />
+        </exec>
+    </target>
+
+    <target name="dist"
+            depends="clean,lint,phpunit">
+        <exec executable="src/vendor/saccharin/src/scripts/prepare_dist.sh" />
+    </target>
+
+    <target name="rewrite-dirs">
+        <replace file="${distdir}/web/index.php" token="{{src_dir}}" value="/x/sharebear/src" />
+        <replace file="${distdir}/web/index.php" token="{{conf_dir}}" value="../conf" />
+        <replace file="${distdir}/conf/conf.php.template" token="{{doctrine_proxy_dir}}" value="/x/sharebear/src/Proxies" />
+    </target>
+
+    <target name="deploy-qa"
+            depends="dist">
+        <exec executable="/usr/bin/rsync">
+            <arg value="-vr" />
+            <arg value="--delete"/>
+            <arg value="--exclude"/>
+            <arg value="conf/conf.php"/>
+            <arg value="-e"/>
+            <arg value="/usr/bin/ssh -i ${user.home}/.ssh/orsidev.pem"/>
+            <arg value="${distdir}/src"/>
+            <arg value="${distdir}/conf"/>
+            <arg value="${distdir}/web"/>
+            <arg value="ec2-user@${qaserver}:/var/www/vhosts/services/default.shopigniter.com"/>
+        </exec>
+    </target>
+
+</project>
