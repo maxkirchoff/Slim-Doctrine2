@@ -1,6 +1,4 @@
-potion
+Slim PHP framework with Doctrine2 ORM
 ======
 
-Potion wine &amp; beer app
-
-Currently using slim framework on doctrine2
+Ready to roll on MySQL db
