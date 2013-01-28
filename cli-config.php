@@ -1,5 +1,5 @@
 <?php
-namespace ShareBear;
+namespace SlimDoctrine2;
 /*
  * Doctrine cli tool bootstrap script
  * @see http://docs.doctrine-project.org/projects/doctrine-orm/en/latest/reference/tools.html#configuration-pear

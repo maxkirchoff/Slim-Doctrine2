@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="ShareBear" default="dev">
+<project name="SlimDoctrine2" default="dev">
 
     <target name="build"
             depends="requirements, prepare,lint,phploc,pdepend,phpmd-ci,phpcs-ci,phpcpd,phpunit-build,phpdoc,phpcb"/>
@@ -323,9 +323,9 @@
     </target>
 
     <target name="rewrite-dirs">
-        <replace file="${distdir}/web/index.php" token="{{src_dir}}" value="/x/sharebear/src" />
+        <replace file="${distdir}/web/index.php" token="{{src_dir}}" value="/x/Slim-Doctrine2/src" />
         <replace file="${distdir}/web/index.php" token="{{conf_dir}}" value="../conf" />
-        <replace file="${distdir}/conf/conf.php.template" token="{{doctrine_proxy_dir}}" value="/x/sharebear/src/Proxies" />
+        <replace file="${distdir}/conf/conf.php.template" token="{{doctrine_proxy_dir}}" value="/x/Slim-Doctrine2/src/Proxies" />
     </target>
 
     <target name="deploy-qa"

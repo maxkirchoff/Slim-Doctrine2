@@ -4,11 +4,7 @@ spl_autoload_register(
       static $classes = null;
       if ($classes === null) {
          $classes = array(
-            'drinkapp\\entity\\brewery' => '/entity/Brewery.php',
-                'drinkapp\\entity\\distillery' => '/entity/Distillery.php',
-                'drinkapp\\entity\\location' => '/entity/Location.php',
-                'drinkapp\\entity\\winery' => '/entity/Winery.php',
-                'slim\\environment' => '/vendor/slim/Slim/Environment.php',
+            'slim\\environment' => '/vendor/slim/Slim/Environment.php',
                 'slim\\exception\\pass' => '/vendor/slim/Slim/Exception/Pass.php',
                 'slim\\exception\\stop' => '/vendor/slim/Slim/Exception/Stop.php',
                 'slim\\http\\headers' => '/vendor/slim/Slim/Http/Headers.php',
